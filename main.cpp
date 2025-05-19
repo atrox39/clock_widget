@@ -303,7 +303,7 @@ HWND createWindow()
   HWND hwnd = CreateWindowExW(
       WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT,
       className,
-      L"Dina",
+      L"Clocks & Weather",
       WS_POPUP,
       100, 100, windowLength, windowHeight,
       nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
