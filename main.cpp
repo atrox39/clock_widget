@@ -152,15 +152,21 @@ void UpdateWeather()
 {
   const wchar_t *host = L"api.openweathermap.org";
   wchar_t path[512];
+  wchar_t city[100];
 
   // Obtener la variable de entorno
   const char *API_KEY = std::getenv("API_KEY");
-  if (API_KEY != nullptr)
+  const char *CITY_D = std::getenv("CITY");
+  wchar_t CITY_WIDE[100];
+  wchar_t API_KEY_WIDE[256];
+  if (API_KEY != nullptr && CITY_D != nullptr)
   {
-    wchar_t API_KEY_WIDE[256];
+    std::mbstowcs(CITY_WIDE, CITY_D, 100);
     std::mbstowcs(API_KEY_WIDE, API_KEY, 256);
-    swprintf(path, 512, L"/data/2.5/weather?q=Tijuana&appid=%ls&units=metric", API_KEY_WIDE);
   }
+
+  swprintf(path, 512, L"/data/2.5/weather?q=%ls&appid=%ls&units=metric", CITY_WIDE, API_KEY_WIDE);
+  swprintf(city, 100, L"%ls", CITY_WIDE);
 
   HINTERNET hSession = WinHttpOpen(L"WeatherApp/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
   if (!hSession)
@@ -212,7 +218,7 @@ void UpdateWeather()
         float tempC = atof(responseStr.c_str() + pos + strlen(tempKey));
         std::lock_guard<std::mutex> lock(g_mutex);
         wchar_t buffer[64];
-        swprintf(buffer, 64, L"Clima en Tijuana: %.0f°C", tempC);
+        swprintf(buffer, 64, L"Clima en %ls: %.0f°C", city, tempC);
         g_weatherLine = buffer;
       }
     }
