@@ -7,6 +7,7 @@
 #include <atomic>
 #include <string>
 #include <vector>
+#include "dotenv.h"
 
 #pragma comment(lib, "winhttp.lib")
 
@@ -150,7 +151,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void UpdateWeather()
 {
   const wchar_t *host = L"api.openweathermap.org";
-  const wchar_t *path = L"/data/2.5/weather?q=Tijuana&appid={{API_KEY}}&units=metric";
+  wchar_t path[512];
+
+  // Obtener la variable de entorno
+  const char *API_KEY = std::getenv("API_KEY");
+  if (API_KEY != nullptr)
+  {
+    wchar_t API_KEY_WIDE[256];
+    std::mbstowcs(API_KEY_WIDE, API_KEY, 256);
+    swprintf(path, 512, L"/data/2.5/weather?q=Tijuana&appid=%ls&units=metric", API_KEY_WIDE);
+  }
 
   HINTERNET hSession = WinHttpOpen(L"WeatherApp/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
   if (!hSession)
@@ -298,29 +308,29 @@ HWND createWindow()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    HWND window = createWindow();
-    if (window == nullptr)
-    {
-        return 1;
-    }
+  Dotenv();
+  HWND window = createWindow();
+  if (window == nullptr)
+  {
+    return 1;
+  }
 
-    ShowWindow(window, SW_SHOW);
-    UpdateWindow(window);
-    RoundWindow(window);
+  ShowWindow(window, SW_SHOW);
+  UpdateWindow(window);
+  RoundWindow(window);
 
-    CreateThread(nullptr, 0, [](LPVOID param) -> DWORD
-                 {
+  CreateThread(nullptr, 0, [](LPVOID param) -> DWORD
+               {
                      HWND hwnd = (HWND)param;
                      while (true)
                      {
                          UpdateWeather();
                          Sleep(25000);
                      }
-                     return 0;
-                 }, window, 0, nullptr);
+                     return 0; }, window, 0, nullptr);
 
-    CreateThread(nullptr, 0, [](LPVOID param) -> DWORD
-                 {
+  CreateThread(nullptr, 0, [](LPVOID param) -> DWORD
+               {
                      HWND hwnd = (HWND)param;
                      while (true)
                      {
@@ -328,15 +338,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                          InvalidateRect(hwnd, nullptr, TRUE);
                          Sleep(1000);
                      }
-                     return 0;
-                 }, window, 0, nullptr);
+                     return 0; }, window, 0, nullptr);
 
-    MSG msg = {};
-    while (GetMessageW(&msg, nullptr, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
-    }
+  MSG msg = {};
+  while (GetMessageW(&msg, nullptr, 0, 0))
+  {
+    TranslateMessage(&msg);
+    DispatchMessageW(&msg);
+  }
 
-    return 0;
+  return 0;
 }
