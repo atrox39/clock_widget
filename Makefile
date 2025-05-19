@@ -1,4 +1,4 @@
 clean:
-	rm -f /p/a/t/h dina.exe
+	rm -f /p/a/t/h Clock.exe
 build: clean
-	g++ -mwindows main.cpp -o dina.exe -lwinhttp -luser32 -lgdi32
+	g++ -mwindows main.cpp -o Clock.exe -lwinhttp -luser32 -lgdi32
